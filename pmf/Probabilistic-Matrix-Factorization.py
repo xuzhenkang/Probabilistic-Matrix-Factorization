@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from numpy import linalg as LA
 from numpy import *
 from loadData import load_rating_data, spilt_rating_dat
-
+from writeResult import write_data, write_pred_data
 
 class PMF(object):
     def __init__(self, num_feat=10, epsilon=1, _lambda=0.1, momentum=0.8, maxepoch=100, num_batches=10,
@@ -85,6 +85,7 @@ class PMF(object):
                 dw_I = np.zeros((num_user, self.num_feat))
 
                 # loop to aggreate the gradients of the same element
+                # 更新所有用户和电影的gradients， dw_C和dw_I矩阵存放的就是用户和电影的gradients
                 for i in range(self.batch_size):
                     dw_C[batch_comID[i], :] += Ix_C[i, :]
                     dw_I[batch_invID[i], :] += Ix_I[i, :]
@@ -103,7 +104,7 @@ class PMF(object):
                     rawErr = pred_out - train_vec[:, 2] + self.mean_inv
                     obj = LA.norm(rawErr) ** 2 + 0.5 * self._lambda * (LA.norm(self.w_I) ** 2 + LA.norm(self.w_C) ** 2)
                     self.err_train.append(np.sqrt(obj / pairs_tr))
-
+                    self.pred_out = pred_out + self.mean_inv
                 # Compute validation error
                 if batch == self.num_batches - 1:
                     pred_out = np.sum(np.multiply(self.w_I[np.array(val_vec[:, 0], dtype='int32'), :],
@@ -111,8 +112,8 @@ class PMF(object):
                                       axis=1)  # mean_inv subtracted
                     rawErr = pred_out - val_vec[:, 2] + self.mean_inv
                     self.err_val.append(LA.norm(rawErr) / np.sqrt(pairs_va))
-
-                    # Print info
+                
+                # Print info
                 if batch == self.num_batches - 1:
                     print('Training RMSE: %f, Test RMSE %f' % (self.err_train[-1], self.err_val[-1]))
                     self.train_rmse.append(self.err_train[-1])
@@ -172,6 +173,9 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid()
     plt.show()
+    write_data(pmf.w_C, 'data/ml-100k/user_latent_factors_data.data')
+    write_data(pmf.w_I, 'data/ml-100k/movie_latent_factors_data.data')
+    write_pred_data(pmf.pred_out, 'data/ml-100k/pred_out_data.data')
 
 
 

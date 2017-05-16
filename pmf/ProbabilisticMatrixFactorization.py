@@ -1,11 +1,12 @@
+#!/usr/bin/env python
 #-*- coding:utf-8 -*-
-# import pickle
-
-import numpy
-from numpy import array
 import pandas
 import pylab
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
+from numpy import array
+import numpy
 
 class ProbabilisticMatrixFactorization:
     """
@@ -31,7 +32,7 @@ class ProbabilisticMatrixFactorization:
         self.learning_rate = .0001  # alpha
         self.regularization_strength = 0.1  # lambda
 
-        self.ratings = numpy.array(rating_df).astype(float)
+        self.ratings = array(rating_df).astype(float)
         self.converged = False
 
         self.num_users = int(numpy.max(self.ratings[:, 0]) + 1)
@@ -107,8 +108,8 @@ class ProbabilisticMatrixFactorization:
         while (not self.converged):
             initial_lik = self.likelihood()
 
-            print("  likelihood =", self.likelihood())
-            print("  setting learning rate =", self.learning_rate)
+            print("  likelihood = %s" %self.likelihood())
+            print("  setting learning rate = %s" %self.learning_rate)
             # apply updates to self.new_users and self.new_items
             self.try_updates(updates_o, updates_d)
 
@@ -218,8 +219,8 @@ def fake_ratings(noise=.25):
 
 def load_rating_data(file_path='data/ml-100k/u.data'):
     prefer = []
-    for line in open(file_path, 'r'):  # 打开指定文件
-        (userid, movieid, rating, ts) = line.split('\t')  # 数据集中每行有4项
+    for line in open(file_path, 'r'):  # 鎵撳紑鎸囧畾鏂囦欢
+        (userid, movieid, rating, ts) = line.split('\t')  # 鏁版嵁闆嗕腑姣忚鏈�4椤�
         uid = int(userid)
         mid = int(movieid)
         rat = float(rating)
@@ -240,7 +241,7 @@ def plot_ratings(ratings):
 def plot_latent_vectors(U, V):
     fig = plt.figure()
     ax = fig.add_subplot(121)
-    cmap = plt.jet
+    cmap = cm.jet
     ax.imshow(U, cmap=cmap, interpolation='nearest')
     plt.title("Users")
     plt.axis("off")
@@ -268,7 +269,7 @@ def plot_predicted_ratings(U, V):
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.imshow(r_hats, cmap=plt.gray, interpolation='nearest')
+    ax.imshow(r_hats, cmap=cm.gray, interpolation='nearest')
     plt.title("Predicted Ratings")
     plt.axis("off")
 
@@ -284,6 +285,8 @@ if __name__ == "__main__":
         print("L=", lik)
         pass
 
+    print pmf.users
+    print pmf.items
     plt.figure()
     plt.plot(liks)
     plt.xlabel("Iteration")
@@ -293,6 +296,6 @@ if __name__ == "__main__":
     plot_predicted_ratings(pmf.users, pmf.items)
     plt.show()
 
-    pmf.print_latent_vectors()
+#     pmf.print_latent_vectors()
     pmf.save_latent_vectors("data/models")
 
